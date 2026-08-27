@@ -1,0 +1,1 @@
+# 26-04-24 intial create properties

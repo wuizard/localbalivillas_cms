@@ -1,0 +1,85 @@
+.dropzone {
+    border: 1.5px dashed #e4e7ea;
+    border-radius: 0.25rem;
+    font-size: x-small;
+    color: #73818f;
+}
+
+.dropzone .dropzone-child {
+    border-radius: 0.25rem;
+    font-size: x-small;
+    padding: 5.5px;
+    border: 1px solid #e4e7ea;
+    color: #73818f;
+}
+
+.d-none {
+    display: none !important; }
+
+
+.rdrDateDisplayWrapper {     
+    display: none; 
+}
+
+.rdrDefinedRangesWrapper {
+    display: none;
+}
+
+.rdrStartEdge {
+    color: #73818f;
+}
+.rdrInRange {
+    color: #73818f;
+}
+.rdrEndEdge {
+    color: #73818f;
+}
+/* .rdrDayToday .rdrDayNumber span:after {
+    background: #957c64 !important;
+    display: none
+} */
+.rdrDay {
+    height: 4em;
+    line-height: 4em;
+}
+/* .rdrSelected, .rdrInRange, .rdrStartEdge, .rdrEndEdge {
+    top: 1px;
+    bottom: 1px
+} */
+/* .rdrDayNumber {
+    margin-top: -8px;
+    font-size: 12px !important;
+} */
+.rdrDay:not(.rdrDayPassive) .rdrInRange ~ .rdrDayNumber span {
+    color: #1d2429
+}
+
+.rdrDay:not(.rdrDayPassive) .rdrStartEdge ~ .rdrDayNumber .rdrPriceInfo , .rdrDay:not(.rdrDayPassive) .rdrEndEdge ~ .rdrDayNumber .rdrPriceInfo, .rdrDay:not(.rdrDayPassive) .rdrSelected ~ .rdrDayNumber .rdrPriceInfo {
+    color: #ffffff !important
+}
+
+.react-datepicker-wrapper {
+    width: 100%;
+}
+
+@media screen and (max-width: 1000px) {
+    .rdrDateRangePickerWrapper {
+        margin-left: -8px;
+        width: 120px;
+    }
+    .rdrNextPrevButton {
+        width: 24px !important;
+    }
+    .rdrMonthAndYearPickers select {
+        font-size: 10px !important;
+    }
+    .rdrMonthAndYearWrapper {
+        font-size: 9px;
+    }
+    .rdrCalendarWrapper {
+        font-size: 9px !important;
+    }
+    .react-datepicker__month-container {
+        width: 100%;
+    }
+}
