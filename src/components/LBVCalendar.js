@@ -23,7 +23,9 @@ function LBVCalendar ({
     const [ focusedRange, setFocusedRange ] = useState([0,0])
 
     useEffect(() => {
-        if (vertical) { setOrientation("vertical") }
+        // Both directions — this used to only ever switch into vertical, so a window
+        // widened back past the breakpoint kept the stacked layout.
+        setOrientation(vertical ? "vertical" : "horizontal")
     }, [vertical])
 
     useEffect(() => {

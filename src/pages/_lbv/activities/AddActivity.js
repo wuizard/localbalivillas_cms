@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Button, Card, Chip, CircularProgress, Grid } from "@mui/material";
+import { Alert, Box, Button, Card, Chip, CircularProgress, Grid } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ReactQuill from "react-quill";
@@ -268,41 +268,47 @@ function AddActivity() {
 
                     <Grid item xs={12} p={2}>
                         <LBVTitleLabel>Pricing</LBVTitleLabel>
+                        {/* Two rows of four rather than six squeezed into one: at md={1}
+                            the age label wrapped onto a second line and dropped its field
+                            out of line with the rest. Rates first, then party size. */}
                         <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                            <Grid item xs={12} md={3}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <LBVSelect label="Charged" options={BASIS_OPTIONS}
                                     value={form.basis}
                                     onChange={(e) => onChange({ basis: e })} />
                             </Grid>
-                            <Grid item xs={6} md={2}>
+                            <Grid item xs={6} sm={6} md={3}>
                                 <LBVInput label="Adult (IDR)" type="number"
                                     value={form.adult}
                                     onChange={(e) => onChange({ adult: e.currentTarget.value })} />
                             </Grid>
-                            <Grid item xs={6} md={2}>
+                            <Grid item xs={6} sm={6} md={3}>
                                 <LBVInput label="Child (IDR)" type="number"
                                     value={form.child}
                                     onChange={(e) => onChange({ child: e.currentTarget.value })} />
                             </Grid>
-                            <Grid item xs={4} md={2}>
-                                <LBVInput label="Min people" type="number"
-                                    value={form.minPax}
-                                    onChange={(e) => onChange({ minPax: e.currentTarget.value })} />
-                            </Grid>
-                            <Grid item xs={4} md={2}>
-                                <LBVInput label="Max people" type="number"
-                                    value={form.maxPax}
-                                    onChange={(e) => onChange({ maxPax: e.currentTarget.value })} />
-                            </Grid>
-                            <Grid item xs={4} md={1}>
+                            {/* Full width on a phone so it ends the rate group rather than
+                                pairing with Min people and splitting rates from capacity. */}
+                            <Grid item xs={12} sm={6} md={3}>
                                 <LBVInput label="Child up to age" type="number"
                                     value={form.childMaxAge}
                                     onChange={(e) => onChange({ childMaxAge: e.currentTarget.value })} />
                             </Grid>
+                            <Grid item xs={6} sm={6} md={3}>
+                                <LBVInput label="Min people" type="number"
+                                    value={form.minPax}
+                                    onChange={(e) => onChange({ minPax: e.currentTarget.value })} />
+                            </Grid>
+                            <Grid item xs={6} sm={6} md={3}>
+                                <LBVInput label="Max people" type="number"
+                                    value={form.maxPax}
+                                    onChange={(e) => onChange({ maxPax: e.currentTarget.value })} />
+                            </Grid>
                         </Grid>
                         <Alert severity="info" sx={{ mt: 2 }}>
-                            The rate every date uses unless a rule below says otherwise. Nothing here
-                            charges a guest yet - the site shows the total and takes an enquiry.
+                            The rate every date uses unless a rule below says otherwise. Anyone at
+                            or under the child age pays the child rate; everyone else pays the
+                            adult rate.
                         </Alert>
                     </Grid>
 
@@ -313,16 +319,18 @@ function AddActivity() {
                         />
                     </Grid>
 
-                    <Grid item xs={12} md={6} p={2}>
+                    <Grid item xs={12} p={2}>
                         <LBVTitleLabel>Dates it cannot run</LBVTitleLabel>
                         <LBVLabel style={{ fontSize: 12, color: '#858585' }}>
                             Blocked dates are crossed out on the website and cannot be chosen.
                         </LBVLabel>
-                        <RoomsSchedule
-                            hideTitle
-                            disabledDate={form.disabledDate || []}
-                            setDisableDay={(dates) => onChange({ disabledDate: dates })}
-                        />
+                        <Box sx={{ mt: 1.5 }}>
+                            <RoomsSchedule
+                                hideTitle
+                                disabledDate={form.disabledDate || []}
+                                setDisableDay={(dates) => onChange({ disabledDate: dates })}
+                            />
+                        </Box>
                     </Grid>
 
                     <Grid item xs={12} md={6} p={2}>

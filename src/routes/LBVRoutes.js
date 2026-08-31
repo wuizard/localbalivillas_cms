@@ -28,6 +28,8 @@ const CouponDetail = Loadable(lazy(() => import('pages/_lbv/coupon/CouponDetail'
 const Activities = Loadable(lazy(() => import('pages/_lbv/activities/Activities')));
 const ActivityDrafts = Loadable(lazy(() => import('pages/_lbv/activities/Drafts')));
 const AddActivity = Loadable(lazy(() => import('pages/_lbv/activities/AddActivity')));
+const ActivityOrders = Loadable(lazy(() => import('pages/_lbv/activities/ActivityOrders')));
+const ActivityOrderDetail = Loadable(lazy(() => import('pages/_lbv/activities/ActivityOrderDetail')));
 
 const EventPackages = Loadable(lazy(() => import('pages/_lbv/events/EventPackages')));
 const AddEventPackage = Loadable(lazy(() => import('pages/_lbv/events/AddEventPackage')));
@@ -167,6 +169,19 @@ let LBVRoutes = {
         {
           path: ':id',
           element: <BookingDetail />
+        },
+      ]
+    },
+    {
+      path: 'activity-orders',
+      children: [
+        {
+          path: '',
+          element: <ActivityOrders />
+        },
+        {
+          path: ':id',
+          element: <ActivityOrderDetail />
         },
       ]
     },

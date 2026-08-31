@@ -8,7 +8,8 @@ import {
   FileTextOutlined,
   CompassOutlined,
   GiftOutlined,
-  MailOutlined
+  MailOutlined,
+  ScheduleOutlined
 } from '@ant-design/icons';
 import { isSuperAdmin } from 'helper/role';
 
@@ -22,7 +23,8 @@ const icons = {
   FileTextOutlined,
   CompassOutlined,
   GiftOutlined,
-  MailOutlined
+  MailOutlined,
+  ScheduleOutlined
 };
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
@@ -46,6 +48,14 @@ const pages = {
       type: 'item',
       url: '/order',
       icon: icons.CalendarOutlined,
+      breadcrumbs: true
+    },
+    {
+      id: 'activity-orders',
+      title: 'Activity orders',
+      type: 'item',
+      url: '/activity-orders',
+      icon: icons.ScheduleOutlined,
       breadcrumbs: true
     },
     {

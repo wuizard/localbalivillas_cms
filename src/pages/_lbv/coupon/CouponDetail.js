@@ -1,6 +1,6 @@
 import { Button, Card, Grid } from "@mui/material";
 import { LBVInput, LBVSelect } from "components/_lbvcomponents/LBVInput";
-import { couponTypeOptions, couponUsageOptions } from "helper/constant";
+import { couponAppliesToOptions, couponTypeOptions, couponUsageOptions } from "helper/constant";
 import React, { useEffect, useState } from "react";
 import { createCoupon, getCoupon, updateCoupon } from "services/couponService";
 import { getPropertiesId } from "services/propertiesService";
@@ -24,6 +24,7 @@ function CouponDetail () {
         couponCode: null,
         couponType: couponTypeOptions[0], // percentage, nominal
         couponUsage: couponUsageOptions[0], // percentage, nominal
+        appliesTo: couponAppliesToOptions[0], // villas | activities | both
         minimumPurchase: null,
         minimumDays: null,
         startDate: moment(new Date()).format('YYYY-MM-DD'),
@@ -59,6 +60,14 @@ function CouponDetail () {
             if (data) { 
                 let couponType = couponTypeOptions[0]
                 let couponUsage = couponUsageOptions[0]
+                let appliesTo = couponAppliesToOptions[0]
+                if (data.appliesTo) {
+                    for (let i = 0; i < couponAppliesToOptions.length; i ++) {
+                        if (couponAppliesToOptions[i].value == data.appliesTo) {
+                            appliesTo = couponAppliesToOptions[i];
+                        }
+                    }
+                }
                 if (data.couponType) {
                     for (let i = 0; i < couponTypeOptions.length; i ++) {
                         if (couponTypeOptions[i].value == data.couponType) {
@@ -83,7 +92,8 @@ function CouponDetail () {
                         return { value: value._id, label: value.name }
                     }) : null,
                     couponType: couponType,
-                    couponUsage: couponUsage
+                    couponUsage: couponUsage,
+                    appliesTo: appliesTo
                 })
             }
         } catch (error) {
@@ -124,6 +134,7 @@ function CouponDetail () {
                     ...form,
                     couponType: form.couponType ? form.couponType.value : null,
                     couponUsage: form.couponUsage ? form.couponUsage.value : null,
+                    appliesTo: form.appliesTo ? form.appliesTo.value : 'villas',
                     propertyId: form.propertyId ? form.propertyId.map(value => { return value.value }) : null
                 })
                 if (error) { throw error; }
@@ -135,6 +146,7 @@ function CouponDetail () {
                     ...form,
                     couponType: form.couponType ? form.couponType.value : null,
                     couponUsage: form.couponUsage ? form.couponUsage.value : null,
+                    appliesTo: form.appliesTo ? form.appliesTo.value : 'villas',
                     propertyId: form.propertyId ? form.propertyId.map(value => { return value.value }) : null
                 })
                 if (error) { throw error; }
@@ -162,6 +174,14 @@ function CouponDetail () {
                         <LBVInput label={"Coupon Code"} onChange={(e) => {
                             onChange({couponCode: e.currentTarget.value.toUpperCase()})
                         }}  value={form.couponCode}/>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <LBVSelect label={"Can be used on"} options={couponAppliesToOptions} onChange={(e) => {
+                            onChange({appliesTo: e})
+                        }} value={form.appliesTo}/>
+                        <LBVLabel style={{fontSize: 12, color: '#858585'}}>
+                            Villa checkout and activity checkout each only accept codes scoped to them.
+                        </LBVLabel>
                     </Grid>
                     <Grid item xs={12}>
                         <LBVSelect label={"Coupon Usage"} options={couponUsageOptions} onChange={(e) => {

@@ -90,3 +90,11 @@ export const couponUsageOptions = [
     { value: "total", label: "Total Order"},
     { value: "night", label: "Night(s)"}
 ]
+// What a promo code may be spent on. Coupons created before activities existed have
+// no value stored; the API reads that as "villas", which is the only checkout that
+// existed at the time.
+export const couponAppliesToOptions = [
+    { value: "villas", label: "Villas only"},
+    { value: "activities", label: "Activities only"},
+    { value: "both", label: "Villas and activities"}
+]

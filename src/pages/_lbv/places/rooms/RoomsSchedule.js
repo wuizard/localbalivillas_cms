@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Alert, Button, Grid, Stack, Typography } from "@mui/material"
+import { Alert, Box, Button, Chip, Grid, Stack, useMediaQuery } from "@mui/material"
 import { LBVLabel, LBVTitleLabel } from "components/_lbvcomponents/LBVLabel"
 import LBVCalendar from "components/LBVCalendar";
 
@@ -9,6 +9,13 @@ function RoomsSchedule ({
     setDisableDay,
     vertical
 }) {
+
+    // Two months side by side need ~660px. Below that the picker overflows whatever
+    // column it is in and drags its nav bar across the page, so drop to a single
+    // stacked month instead. `useMediaQuery` rather than window.innerWidth so it
+    // still responds when the window is resized.
+    const isNarrow = useMediaQuery('(max-width:900px)')
+    const stacked = vertical || isNarrow
 
     const [ form, setForm ] = useState({
         dateStart: null,
@@ -46,12 +53,16 @@ function RoomsSchedule ({
                         </LBVLabel>
                     </div>
 
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="body2" color="textSecondary">
-                            {blocked.length === 0
+                    <Stack direction="row" spacing={1} alignItems="center" flexShrink={0}>
+                        <Chip
+                            size="small"
+                            label={blocked.length === 0
                                 ? 'No dates closed'
                                 : `${blocked.length} date${blocked.length > 1 ? 's' : ''} closed`}
-                        </Typography>
+                            sx={blocked.length === 0
+                                ? { bgcolor: 'secondary.lighter', color: 'text.secondary', fontWeight: 500 }
+                                : { bgcolor: 'error.lighter', color: 'error.main', fontWeight: 500 }}
+                        />
                         {blocked.length > 0 && (
                             <Button size="small" color="error" variant="outlined"
                                 onClick={() => { onChange({ disabledDate: [], startDate: null, endDate: null }) }}
@@ -64,15 +75,34 @@ function RoomsSchedule ({
             </Grid>
 
             <Grid item xs={12}>
-                <LBVCalendar
-                    price={null}
-                    month={2}
-                    onChange={(e) => {
-                        onChange({ disabledDate: e, startDate: null, endDate: null })
+                <Box
+                    sx={{
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        py: 1,
+                        // The picker is a fixed-width block, so the box scrolls rather
+                        // than letting it push the whole page wider than the screen.
+                        // Not a flex container: as a flex item the picker collapses to
+                        // its minimum instead of keeping its natural month width.
+                        overflowX: 'auto',
+                        '& .rdrDefinedRangesWrapper': { display: 'none' },
+                        '& .rdrDateRangePickerWrapper': {
+                            width: 'fit-content',
+                            margin: '0 auto'
+                        }
                     }}
-                    vertical={vertical}
-                    dates={form.disabledDate}
-                />
+                >
+                    <LBVCalendar
+                        price={null}
+                        month={stacked ? 1 : 2}
+                        onChange={(e) => {
+                            onChange({ disabledDate: e, startDate: null, endDate: null })
+                        }}
+                        vertical={stacked}
+                        dates={form.disabledDate}
+                    />
+                </Box>
             </Grid>
 
             <Grid item xs={12}>
