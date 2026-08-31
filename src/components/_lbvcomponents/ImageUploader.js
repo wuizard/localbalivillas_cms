@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Grid, LinearProgress, IconButton, Tooltip } from "@mui/material";
+import { Button, Grid, LinearProgress, IconButton, Stack, Tooltip } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -19,6 +19,7 @@ import { arrayMoveImmutable } from 'array-move';
 
 import DropZoneComponent from "./DropzoneComponent";
 import { LBVLabel, LBVTitleLabel } from "./LBVLabel";
+import { LBVInput } from "./LBVInput";
 import { uploadImage, runWithConcurrency, isImageFile, readableUploadError, UPLOAD_CONCURRENCY } from "helper/upload";
 
 // Defined at module scope on purpose. The previous code built these inside the
@@ -120,6 +121,8 @@ function ImageUploader({
     const [uploads, setUploads] = useState([]);
     const [activeId, setActiveId] = useState(null);
     const [overId, setOverId] = useState(null);
+    const [urlDraft, setUrlDraft] = useState('');
+    const [urlError, setUrlError] = useState(null);
 
     // A drag has to travel before it counts, otherwise clicking the remove button
     // or just tapping a tile would be read as a sort. Touch waits instead of
@@ -256,6 +259,18 @@ function ImageUploader({
         onChangeRef.current(arrayMoveImmutable(list, oldIndex, newIndex));
     }, []);
 
+    const addUrl = useCallback(() => {
+        const url = urlDraft.trim();
+        if (!url) { return; }
+        if (!/^https:\/\/\S+$/i.test(url)) {
+            setUrlError('Needs to be a full https:// URL.');
+            return;
+        }
+        onChangeRef.current(addUnique(valueRef.current, [url]));
+        setUrlDraft('');
+        setUrlError(null);
+    }, [urlDraft]);
+
     return (
         <Grid container spacing={1}>
             <Grid item xs={12}>
@@ -283,6 +298,31 @@ function ImageUploader({
                         </div>
                     </div>
                 </DropZoneComponent>
+            </Grid>
+
+            {/* Uploading needs S3 credentials on the API. Where those are not set —
+                a fresh environment, or before the bucket is wired up — the editor
+                would otherwise be unusable for anything with a picture. Pasting a URL
+                that is already hosted keeps the screen working, and is also how you
+                reuse an image that is already in the bucket. */}
+            <Grid item xs={12}>
+                <Stack direction="row" spacing={1} alignItems="flex-end" sx={{ mt: 0.5 }}>
+                    <LBVInput
+                        label="Or paste an image URL"
+                        placeHolder="https://…"
+                        value={urlDraft}
+                        disabled={disabled}
+                        styles={{ width: '100%' }}
+                        onChange={(e) => { setUrlDraft(e.currentTarget.value); setUrlError(null) }}
+                        enterAction={addUrl}
+                    />
+                    <Button variant="outlined" disabled={disabled} onClick={addUrl} sx={{ minWidth: 90 }}>
+                        Add
+                    </Button>
+                </Stack>
+                {urlError && (
+                    <LBVLabel style={{ fontSize: 11, color: '#f44336' }}>{urlError}</LBVLabel>
+                )}
             </Grid>
 
             {uploads.length > 0 && (

@@ -1,19 +1,15 @@
 // project import
 import pages from './pages';
 import dashboard from './dashboard';
-import { reactLocalStorage } from 'reactjs-localstorage';
+import { isSuperAdmin } from 'helper/role';
 
-import utilities from './utilities';
-import support from './support';
 import setting from './settings';
 
 // ==============================|| MENU ITEMS ||============================== //
-let getUserInfo = reactLocalStorage.get('user_info')
-getUserInfo = getUserInfo ? JSON.parse(getUserInfo) : null
 
 let items = [dashboard, pages]
 
-if (getUserInfo && (!getUserInfo.role || getUserInfo.role == "superadmin")) {
+if (isSuperAdmin()) {
   items.push(setting)
 }
 

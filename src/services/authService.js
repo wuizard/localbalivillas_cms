@@ -16,11 +16,11 @@ export const loginService = async function ({
     }
 }
 
-export const logoutService = async function ({
-    adminId
-}) {
+export const logoutService = async function () {
     try {
-        let response = await client.put(`/logout/${adminId}`);
+        // The server drops the presented token from the admin's token list, so it
+        // stops working immediately rather than lingering until it expires.
+        let response = await client.post(`/logout`);
         if (response.data.statusCode !== 200) { throw response.data.data; }
         let data = response.data.data;
         return { data };
@@ -30,11 +30,9 @@ export const logoutService = async function ({
     }
 }
 
-export const getMe = async function ({
-    _id
-}) {
+export const getMe = async function () {
     try {
-        let response = await client.get(`/me/${_id}`);
+        let response = await client.get(`/me`);
         if (response.data.statusCode !== 200) { throw response.data.data; }
         let data = response.data.data;
         return { data };

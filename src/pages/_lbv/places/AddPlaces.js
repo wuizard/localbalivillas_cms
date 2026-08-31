@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { LBVInput, LBVSelect } from "../../../components/_lbvcomponents/LBVInput"
-import { Card, Button, Grid, CircularProgress, Chip, Alert } from "@mui/material"
+import { Box, Button, Grid, CircularProgress, Chip, Alert, Paper, Stack, Typography } from "@mui/material"
+import MainCard from "components/MainCard"
 import ReactQuill from "react-quill"
-import { LBVLabel, LBVTitleLabel } from "../../../components/_lbvcomponents/LBVLabel"
+import { LBVLabel } from "../../../components/_lbvcomponents/LBVLabel"
 import ImageUploader from "../../../components/_lbvcomponents/ImageUploader"
 import Rooms from "./rooms/Rooms"
 import { createProperties, getProperty, updateProperties } from "../../../services/propertiesService"
@@ -350,100 +351,85 @@ function AddPlaces () {
     }
 
     return (
-        <Grid container xs={12} mb={4}>
-            <Card sx={{ width: '100%' }}>
-                <Grid container>
-                    <Grid item xs={12} p={2} pb={0}>
-                        <Grid container alignItems="center" spacing={1}>
-                            <Grid item>
-                                <LBVTitleLabel>{id ? 'Edit Property' : 'New Property'}</LBVTitleLabel>
+        <Box sx={{ pb: 2 }}>
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                justifyContent="space-between"
+                spacing={1.5}
+                sx={{ mb: 2 }}
+            >
+                <Stack spacing={0.5}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography variant="h4">
+                            {id ? (form.name || 'Edit property') : 'New property'}
+                        </Typography>
+                        {isDraft && <Chip label="Draft" size="small" color="warning" />}
+                    </Stack>
+                    <Typography variant="body2" color="textSecondary">
+                        {id
+                            ? 'Changes are not live until you save.'
+                            : 'Save a draft to start autosaving. Nothing is published until you press Publish.'}
+                    </Typography>
+                </Stack>
+
+                <Button variant="outlined" onClick={() => navigate('/places')}>
+                    Back to places
+                </Button>
+            </Stack>
+
+            <Grid container spacing={2} alignItems="flex-start">
+                <Grid item xs={12} md={7}>
+                    <MainCard title="Basics">
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <LBVInput label={"Name"}
+                                    placeHolder="Input property name"
+                                    value={form.name} onChange={(e) => {
+                                    onChange({ name: e.currentTarget.value })
+                                }}/>
                             </Grid>
-                            {isDraft && (
-                                <Grid item>
-                                    <Chip label="DRAFT" size="small" color="warning" />
-                                </Grid>
-                            )}
-                            {uploadingCount > 0 && (
-                                <Grid item>
-                                    <Chip
-                                        size="small"
-                                        color="info"
-                                        label={`Uploading ${uploadingCount} image${uploadingCount > 1 ? 's' : ''}...`}
-                                    />
-                                </Grid>
-                            )}
-                            {autoSavedAt && !dirty && (
-                                <Grid item>
-                                    <LBVLabel style={{ fontSize: 11, color: '#858585' }}>
-                                        Draft autosaved at {autoSavedAt.toLocaleTimeString()}
-                                    </LBVLabel>
-                                </Grid>
-                            )}
+                            <Grid item xs={12} sm={6}>
+                                <LBVSelect label={"Region"}
+                                    value={form.region}
+                                    options={regions}
+                                    onChange={(e) => { onChange({ region: e, location: null, locationId: null }) }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <LBVSelect label={"Location"}
+                                    value={form.location}
+                                    options={locations}
+                                    onChange={(e) => { onChange({ location: e }) }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <LBVSelect label={"Type"}
+                                    value={form.type}
+                                    options={typeOptions}
+                                    onChange={(e) => { onChange({ type: e }) }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <LBVInput label={"Map URL"}
+                                    placeHolder="Paste the Google Maps embed code or a plain URL"
+                                    value={form.mapInfo} onChange={(e) => {
+                                    onChange({ mapInfo: extractMapUrl(e.currentTarget.value) })
+                                }}/>
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    </MainCard>
+                </Grid>
 
-                    {!id && (
-                        <Grid item xs={12} p={2} pb={0}>
-                            <Alert severity="info">
-                                Save as draft once to start autosaving. Images upload as you add them,
-                                so saving itself is quick.
-                            </Alert>
-                        </Grid>
-                    )}
-
-                    <Grid item container xs={12} md={6} spacing={1} p={2}>
-                        <Grid item xs={12}>
-                            <LBVInput label={"Name"}
-                                placeHolder="Input property name"
-                                value={form.name} onChange={(e) => {
-                                onChange({ name: e.currentTarget.value })
-                            }}/>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <LBVSelect label={"Region"}
-                                value={form.region}
-                                options={regions}
-                                onChange={(e) => { onChange({ region: e, location: null, locationId: null }) }}
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <LBVSelect label={"Location"}
-                                value={form.location}
-                                options={locations}
-                                onChange={(e) => { onChange({ location: e }) }}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <LBVSelect label={"Type"}
-                                value={form.type}
-                                options={typeOptions}
-                                onChange={(e) => { onChange({ type: e }) }}
-                            />
-                        </Grid>
-                        <Grid item xs={12} >
-                            <LBVLabel style={{fontSize: 13, color: "rgb(133, 133, 133)"}}>Description</LBVLabel>
-                            <ReactQuill theme="snow" style={{ background: 'white' }} value={form.description}
-                                modules={{toolbar: toolbarOptions}}
-                                onChange={(e) => { onChange({description: e}) }}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <LBVLabel style={{fontSize: 13, color: "rgb(133, 133, 133)"}}>House Rules</LBVLabel>
-                            <ReactQuill theme="snow" style={{ background: 'white' }} value={form.houseRules}
-                                modules={{toolbar: toolbarOptions}}
-                                onChange={(e) => { onChange({houseRules: e}) }}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <LBVInput label={"Map URL"}
-                                placeHolder="Paste the Google Maps embed code or a plain URL"
-                                value={form.mapInfo} onChange={(e) => {
-                                onChange({ mapInfo: extractMapUrl(e.currentTarget.value) })
-                            }}/>
-                        </Grid>
-                    </Grid>
-
-                    <Grid item xs={12} md={6} p={2}>
+                <Grid item xs={12} md={5}>
+                    <MainCard
+                        title="Images"
+                        secondary={
+                            <Typography variant="caption" color="textSecondary">
+                                {(form.propertyImages || []).length} added
+                            </Typography>
+                        }
+                    >
                         <ImageUploader
                             uploadName="addonImage"
                             dirName="properties"
@@ -452,15 +438,46 @@ function AddPlaces () {
                             onChange={setPropertyImages}
                             onPendingChange={setPropertyPending}
                         />
-                    </Grid>
+                    </MainCard>
+                </Grid>
 
-                    <Grid item xs={12} p={2}>
-                        <Grid container alignItems="center">
-                            <LBVTitleLabel style={{marginRight: 10}}>Property Rooms</LBVTitleLabel>
-                            <Button variant="contained" sx={{ minWidth: 100 }} color="primary" onClick={addRoom}>
-                                Add Rooms
-                            </Button>
+                {/* Rich text needs the full width - at half width the toolbar wraps and
+                    long paragraphs become a column two words wide. */}
+                <Grid item xs={12}>
+                    <MainCard title="Description and house rules">
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} lg={6}>
+                                <LBVLabel style={{fontSize: 13, color: "rgb(133, 133, 133)"}}>Description</LBVLabel>
+                                <ReactQuill theme="snow" style={{ background: 'white' }} value={form.description}
+                                    modules={{toolbar: toolbarOptions}}
+                                    onChange={(e) => { onChange({description: e}) }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} lg={6}>
+                                <LBVLabel style={{fontSize: 13, color: "rgb(133, 133, 133)"}}>House Rules</LBVLabel>
+                                <ReactQuill theme="snow" style={{ background: 'white' }} value={form.houseRules}
+                                    modules={{toolbar: toolbarOptions}}
+                                    onChange={(e) => { onChange({houseRules: e}) }}
+                                />
+                            </Grid>
                         </Grid>
+                    </MainCard>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <MainCard
+                        title="Rooms"
+                        secondary={
+                            <Button variant="contained" size="small" color="primary" onClick={addRoom}>
+                                Add room
+                            </Button>
+                        }
+                    >
+                        {rooms.length === 0 && (
+                            <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                                No rooms yet. A property needs at least one before guests can book it.
+                            </Typography>
+                        )}
                         <Rooms
                             rooms={rooms}
                             saveRoomInfo={saveRoomInfo}
@@ -468,47 +485,71 @@ function AddPlaces () {
                             deleteRoom={deleteRoom}
                             onRoomUploadingChange={setRoomPending}
                         />
-                    </Grid>
-
-                    <Grid item xs={12} p={2}>
-                        {missingFields.length > 0 && (
-                            <Alert severity="warning" sx={{ mb: 1 }}>
-                                Needed before publishing: {missingFields.join(', ')}. You can still save a draft.
-                            </Alert>
-                        )}
-                        <Grid container spacing={1}>
-                            <Grid item>
-                                <Button variant="outlined" color="primary"
-                                    sx={{ minWidth: 140 }}
-                                    disabled={busy || uploadingCount > 0}
-                                    onClick={() => save('draft')}
-                                >
-                                    {savingDraft ? <CircularProgress size={24} /> : "Save as Draft"}
-                                </Button>
-                            </Grid>
-                            <Grid item>
-                                <Button variant="contained" color="primary"
-                                    sx={{ minWidth: 140 }}
-                                    disabled={busy || uploadingCount > 0 || missingFields.length > 0}
-                                    onClick={() => save('published')}
-                                >
-                                    {saving
-                                        ? <CircularProgress size={24} style={{color: 'white'}} />
-                                        : (isDraft || !id) ? "Publish" : "Save"}
-                                </Button>
-                            </Grid>
-                            {uploadingCount > 0 && (
-                                <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <LBVLabel style={{ fontSize: 12, color: '#858585' }}>
-                                        Waiting for {uploadingCount} upload{uploadingCount > 1 ? 's' : ''} to finish
-                                    </LBVLabel>
-                                </Grid>
-                            )}
-                        </Grid>
-                    </Grid>
+                    </MainCard>
                 </Grid>
-            </Card>
-        </Grid>
+            </Grid>
+
+            {/* Sticky, because the form runs well past a screen once rooms are added and
+                Save used to sit below all of them. */}
+            <Paper
+                elevation={3}
+                sx={{
+                    position: 'sticky',
+                    bottom: 0,
+                    zIndex: 10,
+                    mt: 2,
+                    p: { xs: 1, sm: 1.5 },
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                {missingFields.length > 0 && (
+                    <Alert severity="warning" sx={{ mb: 1, py: 0, fontSize: { xs: 12, sm: 14 } }}>
+                        Needed before publishing: {missingFields.join(', ')}. You can still save a draft.
+                    </Alert>
+                )}
+
+                {/* Row on every width, including phones. Stacked full-width buttons made
+                    this bar 122px tall - 15% of a 375x812 screen, permanently occupied on
+                    a form you are meant to be reading. */}
+                <Stack direction="row" spacing={1} alignItems="center">
+                    {/* Deliberately does not report saved/unsaved. `dirty` reads true on a
+                        freshly loaded property that has rooms - something writes back into
+                        `rooms` after markClean - so a "you have unsaved changes" label here
+                        would be wrong on every load. Uploads and the autosave stamp are the
+                        two signals that are reliable. */}
+                    <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ flex: 1, display: { xs: 'none', sm: 'block' } }}
+                    >
+                        {uploadingCount > 0
+                            ? `Waiting for ${uploadingCount} upload${uploadingCount > 1 ? 's' : ''} to finish`
+                            : autoSavedAt
+                                ? `Draft autosaved at ${autoSavedAt.toLocaleTimeString()}`
+                                : ''}
+                    </Typography>
+
+                    <Button variant="outlined" color="primary"
+                        sx={{ flex: { xs: 1, sm: 'none' }, minWidth: { sm: 140 } }}
+                        disabled={busy || uploadingCount > 0}
+                        onClick={() => save('draft')}
+                    >
+                        {savingDraft ? <CircularProgress size={24} /> : "Save as Draft"}
+                    </Button>
+
+                    <Button variant="contained" color="primary"
+                        sx={{ flex: { xs: 1, sm: 'none' }, minWidth: { sm: 140 } }}
+                        disabled={busy || uploadingCount > 0 || missingFields.length > 0}
+                        onClick={() => save('published')}
+                    >
+                        {saving
+                            ? <CircularProgress size={24} style={{color: 'white'}} />
+                            : (isDraft || !id) ? "Publish" : "Save"}
+                    </Button>
+                </Stack>
+            </Paper>
+        </Box>
     )
 }
 

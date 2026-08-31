@@ -32,7 +32,12 @@ const HeaderContent = () => {
 
       {/* <Notification /> */}
       {/* {!matchesXs && <Profile />} */}
-      {matchesXs && <MobileSection />}
+
+      {/* MobileSection is the "..." button in the mobile header. Its popper renders a
+          Toolbar whose only children - Search and Profile - are commented out, so
+          tapping it opened an empty white bar over the page. Hidden until there is
+          something to put in it; re-enable this line at that point. */}
+      {/* {matchesXs && <MobileSection />} */}
     </>
   );
 };

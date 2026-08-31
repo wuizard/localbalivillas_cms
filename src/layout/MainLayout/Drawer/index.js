@@ -7,6 +7,7 @@ import { Box, Drawer, ListItemButton, ListItemIcon, ListItemText, Typography, us
 
 // assets
 import { LogoutOutlined } from '@ant-design/icons';
+import { logoutService } from 'services/authService';
 
 // project import
 import DrawerHeader from './DrawerHeader';
@@ -22,7 +23,11 @@ const currWindow = window
 
 const LogoutButton = () => (
   <ListItemButton
-    onClick={() => {
+    onClick={async () => {
+      // Revoke server-side first so the token is dead even if it was copied
+      // elsewhere; clearing local storage alone only forgets it on this machine.
+      // A failure here still signs the browser out - never trap someone in the app.
+      try { await logoutService() } catch (e) { /* signing out regardless */ }
       reactLocalStorage.clear()
       currWindow.location.href = "/"
     }}

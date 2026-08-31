@@ -2,6 +2,7 @@ import axios from 'axios';
 import Compressor from 'compressorjs';
 
 import { presignUpload } from 'services/uploadService';
+import { hasDirectCredentials, signDirectUpload } from './uploadDirect';
 
 // Four at a time. One-at-a-time was the old behaviour and it is what made a
 // 75-image property take minutes; unbounded parallelism just trades that for
@@ -38,7 +39,33 @@ function compressImage(file) {
     });
 }
 
-// Uploads one file straight to S3 through a presigned URL and returns its public
+/**
+ * Where the upload URL is signed.
+ *
+ * `direct` when the bundle was built with REACT_APP_AWS_* — the browser signs for
+ * itself and the API is not involved. `presign` otherwise, which asks
+ * POST /admin/upload/presign and keeps the credentials on the server.
+ *
+ * Direct wins when both are possible, because that is the point of setting the
+ * variables at all. Read the header of ./uploadDirect.js before you do: those
+ * variables are inlined into main.js and served to every visitor.
+ */
+export function chooseUploadStrategy() {
+    return hasDirectCredentials() ? 'direct' : 'presign';
+}
+
+/** One signed PUT URL, from whichever side is configured to produce it. */
+async function getUploadTarget({ contentType, dirName, size }) {
+    if (chooseUploadStrategy() === 'direct') {
+        return signDirectUpload({ contentType, dirName, size });
+    }
+
+    const { data, error } = await presignUpload({ contentType, dirName, size });
+    if (error || !data) { throw new Error(error || 'Could not get an upload URL'); }
+    return data;
+}
+
+// Uploads one file straight to S3 through a signed URL and returns its public
 // URL. Progress is reported 0-100.
 export async function uploadImage(file, { dirName, onProgress, signal } = {}) {
     const blob = await compressImage(file);
@@ -46,12 +73,7 @@ export async function uploadImage(file, { dirName, onProgress, signal } = {}) {
     // the old code hardcoded image/png and mislabelled every JPEG in the bucket.
     const contentType = blob.type || file.type || 'image/jpeg';
 
-    const { data, error } = await presignUpload({
-        contentType,
-        dirName,
-        size: blob.size,
-    });
-    if (error || !data) { throw new Error(error || 'Could not get an upload URL'); }
+    const data = await getUploadTarget({ contentType, dirName, size: blob.size });
 
     await axios.put(data.uploadUrl, blob, {
         headers: { 'Content-Type': contentType },

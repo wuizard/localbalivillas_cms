@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react"
-import { Card, Grid, Button } from "@mui/material"
+import { Alert, Button, Grid, Stack, Typography } from "@mui/material"
 import { LBVLabel, LBVTitleLabel } from "components/_lbvcomponents/LBVLabel"
-import { LBVInput } from "components/_lbvcomponents/LBVInput"
-import moment from "moment";
 import LBVCalendar from "components/LBVCalendar";
 
 function RoomsSchedule ({
@@ -27,59 +25,46 @@ function RoomsSchedule ({
 
     useEffect(() => {
         setDisableDay(form.disabledDate)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.disabledDate])
 
+    const blocked = form.disabledDate || []
+
     return (
-        <Grid>
-            {
-                !hideTitle && <LBVTitleLabel>Disable Dates</LBVTitleLabel>
-            }
-            {/* <Grid container xs={12}>
-                <Grid item container xs={12} md={8} spacing={1}> 
-                    <Grid item xs={0} md={3}>
-                        <LBVLabel style={{marginTop: 8}}>Set Disable Date</LBVLabel>
-                    </Grid>
-                    <Grid item xs={12} md>
-                        <LBVInput value={form.dateStart} 
-                            style={{weekStart: 1}}
-                            type="date" 
-                            onChange={(e) => {
-                                onChange({dateStart: e})
-                            }}
-                            inputProps={{
-                                InputProps: {
-                                    // inputProps: { min: moment(new Date()).format("YYYY-MM-DD"), max: checkAdvancedDays()}
-                                    inputProps: { min: moment(new Date()).format("YYYY-MM-DD") }
-                                }
-                            }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md>
-                        <LBVInput value={form.dateEnd} 
-                            style={{weekStart: 1}}
-                            type="date" 
-                            onChange={(e) => {
-                                onChange({dateEnd: e})
-                            }}
-                            inputProps={{
-                                InputProps: {
-                                    // inputProps: { min: moment(new Date()).format("YYYY-MM-DD"), max: checkAdvancedDays()}
-                                    inputProps: { min: moment(new Date()).format("YYYY-MM-DD") }
-                                }
-                            }}
-                        />
-                    </Grid>
-                    <Grid item xs>
-                        <Button color="primary" variant="contained" onClick={() => {
-                            let days = calculateDays({startDate: form.dateStart, endDate: form.dateEnd})
-                            console.log(days)
-                            onChange({ disabledDate: days, startDate: null, endDate: null })
-                        }}>Add</Button>
-                    </Grid>
-                </Grid>
-            </Grid> */}
-            <Grid container mt={1}>
-                <LBVCalendar 
+        <Grid container spacing={1.5}>
+            <Grid item xs={12}>
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    spacing={1}
+                >
+                    <div>
+                        {!hideTitle && <LBVTitleLabel>Disable Dates</LBVTitleLabel>}
+                        <LBVLabel style={{ fontSize: 12, color: '#858585' }}>
+                            Click a date to close it. Click again to reopen it.
+                        </LBVLabel>
+                    </div>
+
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="body2" color="textSecondary">
+                            {blocked.length === 0
+                                ? 'No dates closed'
+                                : `${blocked.length} date${blocked.length > 1 ? 's' : ''} closed`}
+                        </Typography>
+                        {blocked.length > 0 && (
+                            <Button size="small" color="error" variant="outlined"
+                                onClick={() => { onChange({ disabledDate: [], startDate: null, endDate: null }) }}
+                            >
+                                Clear all
+                            </Button>
+                        )}
+                    </Stack>
+                </Stack>
+            </Grid>
+
+            <Grid item xs={12}>
+                <LBVCalendar
                     price={null}
                     month={2}
                     onChange={(e) => {
@@ -88,44 +73,16 @@ function RoomsSchedule ({
                     vertical={vertical}
                     dates={form.disabledDate}
                 />
-            {/* {
-                form.disabledDate && form.disabledDate.map( (value, index) => {
-                    return (
-                        <Grid item xs={6} md={3}>
-                            <Card>
-                                <Grid container p={1}>
-                                    <Grid item xs>{value}</Grid>
-                                    <Grid item xs={1} onClick={() => {
-                                            console.log('hello world')
-                                            const disableDates = form.disabledDate
-                                            disableDates.splice(index, 1)
-                                            onChange({ disabledDate: [...disableDates], startDate: null, endDate: null })
-                                        }}
-                                        style={{cursor: 'pointer'}}
-                                    >x</Grid>
-                                </Grid>
-                            </Card>
-                        </Grid>
-                    )
-                })
-            } */}
+            </Grid>
+
+            <Grid item xs={12}>
+                <Alert severity="info">
+                    A closed date cannot be booked. Prices are unaffected — set those under
+                    Special Prices.
+                </Alert>
             </Grid>
         </Grid>
     )
-}
-
-function calculateDays({
-    startDate,
-    endDate
-}){
-    let range = moment(endDate) - moment(startDate)
-    let dateRange = Math.round(range / (1000 * 3600 * 24))
-    console.log(dateRange, startDate, endDate)
-    let days = []
-    for (let i = 0; i <= dateRange; i ++) {
-        days.push(moment(startDate).add(i, 'day').format('YYYY-MM-DD'))
-    }
-    return days
 }
 
 export default RoomsSchedule

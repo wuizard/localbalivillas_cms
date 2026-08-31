@@ -1,6 +1,16 @@
 // assets
-import { LoginOutlined, ProfileOutlined, HomeOutlined, CalendarOutlined, PercentageOutlined, FileTextOutlined } from '@ant-design/icons';
-import { reactLocalStorage } from 'reactjs-localstorage';
+import {
+  LoginOutlined,
+  ProfileOutlined,
+  HomeOutlined,
+  CalendarOutlined,
+  PercentageOutlined,
+  FileTextOutlined,
+  CompassOutlined,
+  GiftOutlined,
+  MailOutlined
+} from '@ant-design/icons';
+import { isSuperAdmin } from 'helper/role';
 
 // icons
 const icons = {
@@ -9,14 +19,22 @@ const icons = {
   HomeOutlined,
   CalendarOutlined,
   PercentageOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  CompassOutlined,
+  GiftOutlined,
+  MailOutlined
 };
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
-let getUserInfo = reactLocalStorage.get('user_info')
-getUserInfo = getUserInfo ? JSON.parse(getUserInfo) : null
-
+/**
+ * The order reads as two pairs: what we publish (Places, Activities, Occasions),
+ * then what came in (Orders, Enquiries). That is how the team's day actually splits.
+ *
+ * Enquiries sits with Orders and is visible to everyone, because whoever works the
+ * booking queue works this one. The catalogue entries follow Places and stay
+ * superadmin-only.
+ */
 const pages = {
   id: 'places',
   title: '',
@@ -29,22 +47,47 @@ const pages = {
       url: '/order',
       icon: icons.CalendarOutlined,
       breadcrumbs: true
-      // target: true
+    },
+    {
+      id: 'enquiries',
+      title: 'Enquiries',
+      type: 'item',
+      url: '/enquiries',
+      icon: icons.MailOutlined,
+      breadcrumbs: true
     }
   ]
 };
 
-if (getUserInfo && (!getUserInfo.role || getUserInfo.role == "superadmin")) {
-  // Drafts are a tab inside Places rather than their own menu entry.
-  pages.children.unshift({
-    id: 'places',
-    title: 'Places',
-    type: 'item',
-    url: '/places',
-    icon: icons.HomeOutlined,
-    breadcrumbs: true
-    // target: true
-  })
+if (isSuperAdmin()) {
+  // Catalogue entries go above Orders, in publish order. Drafts stay a tab inside
+  // each screen rather than earning their own menu row.
+  pages.children.unshift(
+    {
+      id: 'places',
+      title: 'Places',
+      type: 'item',
+      url: '/places',
+      icon: icons.HomeOutlined,
+      breadcrumbs: true
+    },
+    {
+      id: 'activities',
+      title: 'Activities',
+      type: 'item',
+      url: '/activities',
+      icon: icons.CompassOutlined,
+      breadcrumbs: true
+    },
+    {
+      id: 'occasions',
+      title: 'Occasions',
+      type: 'item',
+      url: '/events',
+      icon: icons.GiftOutlined,
+      breadcrumbs: true
+    }
+  )
   pages.children.push({
     id: 'coupons',
     title: 'Coupons',
@@ -52,7 +95,6 @@ if (getUserInfo && (!getUserInfo.role || getUserInfo.role == "superadmin")) {
     url: '/coupons',
     icon: icons.PercentageOutlined,
     breadcrumbs: true
-    // target: true
   })
 }
 

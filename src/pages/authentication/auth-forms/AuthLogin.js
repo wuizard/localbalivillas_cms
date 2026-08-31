@@ -29,6 +29,7 @@ import AnimateButton from 'components/@extended/AnimateButton';
 // assets
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { loginService } from 'services/authService';
+import { TOKEN_KEY } from 'services/service';
 import { reactLocalStorage } from 'reactjs-localstorage';
 
 
@@ -54,9 +55,18 @@ const AuthLogin = () => {
     })
     console.log(data, error)
     if (error) { alert(error) }
-    if (data) { 
-      reactLocalStorage.set('lbv_admin_token', data.token)
-      reactLocalStorage.setObject("user_info", data)
+    if (data) {
+      // The API returns only what the CMS may hold - no password hash, no token
+      // list. Store the identity fields explicitly so a future API change cannot
+      // quietly widen what ends up in localStorage.
+      reactLocalStorage.set(TOKEN_KEY, data.token)
+      reactLocalStorage.setObject("user_info", {
+        _id: data._id,
+        name: data.name,
+        username: data.username,
+        role: data.role,
+        allowedPermission: data.allowedPermission || [],
+      })
       window.location.href = "/"
     }
   }

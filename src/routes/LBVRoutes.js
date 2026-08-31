@@ -6,6 +6,7 @@ import MainLayout from 'layout/MainLayout';
 import { Navigate } from 'react-router';
 import { reactLocalStorage } from 'reactjs-localstorage';
 import AdminDetail from 'pages/_lbv/admin/AdminDetail';
+import { isSuperAdmin } from 'helper/role';
 import Admins from 'pages/_lbv/admin/Admins';
 
 // render - dashboard
@@ -24,13 +25,19 @@ const Location = Loadable(lazy(() => import('pages/_lbv/region/Locations')));
 const Coupons = Loadable(lazy(() => import('pages/_lbv/coupon/Coupons')))
 const CouponDetail = Loadable(lazy(() => import('pages/_lbv/coupon/CouponDetail')))
 
+const Activities = Loadable(lazy(() => import('pages/_lbv/activities/Activities')));
+const ActivityDrafts = Loadable(lazy(() => import('pages/_lbv/activities/Drafts')));
+const AddActivity = Loadable(lazy(() => import('pages/_lbv/activities/AddActivity')));
+
+const EventPackages = Loadable(lazy(() => import('pages/_lbv/events/EventPackages')));
+const AddEventPackage = Loadable(lazy(() => import('pages/_lbv/events/AddEventPackage')));
+
+const Enquiries = Loadable(lazy(() => import('pages/_lbv/enquiries/Enquiries')));
+const EnquiryDetail = Loadable(lazy(() => import('pages/_lbv/enquiries/EnquiryDetail')));
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const isLoggedIn = reactLocalStorage.get('lbv_admin_token');
-
-// load reactlocalstorage
-let getUserInfo = reactLocalStorage.get('user_info')
-getUserInfo = getUserInfo ? JSON.parse(getUserInfo) : null
 
 let PlaceRoutes = {
   path: 'places',
@@ -51,6 +58,48 @@ let PlaceRoutes = {
     {
       path: ':id',
       element: <AddPlaces />
+    }
+  ]
+}
+
+let ActivityRoutes = {
+  path: 'activities',
+  children: [
+    {
+      path: '',
+      element: <Activities />
+    },
+    {
+      // must be declared before ':id' or it is swallowed by the id route
+      path: 'drafts',
+      element: <ActivityDrafts />
+    },
+    {
+      path: 'add-activity',
+      element: <AddActivity />
+    },
+    {
+      path: ':id',
+      element: <AddActivity />
+    }
+  ]
+}
+
+let EventRoutes = {
+  path: 'events',
+  children: [
+    {
+      path: '',
+      element: <EventPackages />
+    },
+    {
+      // before ':id', same trap as activities/drafts
+      path: 'add-occasion',
+      element: <AddEventPackage />
+    },
+    {
+      path: ':id',
+      element: <AddEventPackage />
     }
   ]
 }
@@ -122,6 +171,19 @@ let LBVRoutes = {
       ]
     },
     {
+      path: 'enquiries',
+      children: [
+        {
+          path: '',
+          element: <Enquiries />
+        },
+        {
+          path: ':id',
+          element: <EnquiryDetail />
+        },
+      ]
+    },
+    {
       path: 'coupons',
       children: [
         {
@@ -141,8 +203,10 @@ let LBVRoutes = {
   ]
 };
 
-if (getUserInfo && (!getUserInfo.role || getUserInfo.role == "superadmin")) {
+if (isSuperAdmin()) {
   LBVRoutes.children.unshift(PlaceRoutes)
+  LBVRoutes.children.push(ActivityRoutes)
+  LBVRoutes.children.push(EventRoutes)
   LBVRoutes.children.push(SuperAdminSettings)
 }
 
