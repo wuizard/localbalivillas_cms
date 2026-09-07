@@ -38,11 +38,21 @@ const NavGroup = ({ item }) => {
       subheader={
         item.title &&
         drawerOpen && (
-          <Box sx={{ pl: 3, mb: 1.5 }}>
-            <Typography variant="subtitle2" sx={{ color: sidebarColors.textMuted, letterSpacing: '0.08em' }}>
+          // A quiet section label: small, spaced and uppercase, so it reads as a
+          // divider between groups rather than as another item to click.
+          <Box sx={{ pl: 3, pr: 2, mt: 1, mb: 0.75 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: sidebarColors.textMuted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                fontSize: '0.6875rem',
+                fontWeight: 600
+              }}
+            >
               {item.title}
             </Typography>
-            {/* only available in paid version */}
           </Box>
         )
       }

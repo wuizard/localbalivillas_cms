@@ -21,6 +21,7 @@ const BookingDetail = Loadable(lazy(() => import('pages/_lbv/booking/BookingDeta
 
 const Region = Loadable(lazy(() => import('pages/_lbv/region/Regions')));
 const Location = Loadable(lazy(() => import('pages/_lbv/region/Locations')));
+const Categories = Loadable(lazy(() => import('pages/_lbv/category/Categories')));
 
 const Coupons = Loadable(lazy(() => import('pages/_lbv/coupon/Coupons')))
 const CouponDetail = Loadable(lazy(() => import('pages/_lbv/coupon/CouponDetail')))
@@ -96,7 +97,7 @@ let EventRoutes = {
     },
     {
       // before ':id', same trap as activities/drafts
-      path: 'add-occasion',
+      path: 'add-event',
       element: <AddEventPackage />
     },
     {
@@ -116,6 +117,10 @@ let SuperAdminSettings = {
     {
       path: 'location',
       element: <Location />
+    },
+    {
+      path: 'categories',
+      element: <Categories />
     },
     {
       path: 'admins',

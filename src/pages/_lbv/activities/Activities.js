@@ -8,36 +8,26 @@ import {
     IconButton,
     Skeleton,
     Stack,
+    InputAdornment,
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableRow,
+    TextField,
     Tooltip,
     Typography
 } from "@mui/material";
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { useDebounce } from "use-debounce";
 
 import MainCard from "components/MainCard";
+import CategoryFilter from "components/_lbvcomponents/CategoryFilter";
 import { currencyFormat } from "helper/numberHelper";
+import useCategories, { categoryLabel } from "helper/useCategories";
 import { deleteActivity, getActivities, hideActivity } from "services/activityService";
-
-export const CATEGORY_OPTIONS = [
-    { label: "Tour", value: "tour" },
-    { label: "Transfer", value: "transfer" },
-    { label: "Wellness", value: "wellness" },
-    { label: "On the water", value: "water" },
-    { label: "Culture", value: "culture" },
-    { label: "Adventure", value: "adventure" },
-    { label: "Class", value: "class" },
-];
-
-const categoryLabel = (value) => {
-    const found = CATEGORY_OPTIONS.find((option) => option.value === value);
-    return found ? found.label : (value || '-');
-};
 
 function Activities({ status = 'published' }) {
     const navigate = useNavigate()
@@ -47,13 +37,20 @@ function Activities({ status = 'published' }) {
     const [ loading, setLoading ] = useState(true)
     const [ deleteDialog, setDeleteDialog ] = useState({ open: false, activity: null })
 
+    // Categories are managed in Settings, so both the chip filter and the label
+    // in the table read the live list rather than a copy kept in this file.
+    const { categories, loading: loadingCategories } = useCategories({ activeOnly: false })
+    const [ category, setCategory ] = useState('')
+    const [ search, setSearch ] = useState('')
+    const [ debouncedSearch ] = useDebounce(search, 400)
+
     const loadActivities = useCallback(async () => {
         setLoading(true)
-        let { data, error } = await getActivities({ status })
+        let { data, error } = await getActivities({ status, category, name: debouncedSearch })
         setLoading(false)
         if (error) { toast.error(error) }
         if (data) { setRows(data.data || []) }
-    }, [status])
+    }, [status, category, debouncedSearch])
 
     useEffect(() => {
         loadActivities()
@@ -118,8 +115,31 @@ function Activities({ status = 'published' }) {
 
             <Grid item xs={12}>
                 <MainCard content={false}>
+                    <Box sx={{ px: 2.5, pt: 2.5, pb: 2 }}>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Search activities by name"
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value) }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchOutlined style={{ fontSize: '0.9rem' }} />
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+                    </Box>
+                    <CategoryFilter
+                        categories={categories}
+                        value={category}
+                        onChange={setCategory}
+                        loading={loadingCategories}
+                    />
                     <Box sx={{ overflowX: 'auto' }}>
-                        <Table>
+                        {/* nowrap keeps a row one line tall on a phone - the box above scrolls */}
+                        <Table sx={{ '& .MuiTableCell-root': { whiteSpace: 'nowrap' } }}>
                             <TableHead>
                                 <TableRow>
                                     <TableCell>Name</TableCell>
@@ -153,7 +173,7 @@ function Activities({ status = 'published' }) {
                                                 /{activity.key}
                                             </Typography>
                                         </TableCell>
-                                        <TableCell>{categoryLabel(activity.category)}</TableCell>
+                                        <TableCell>{categoryLabel(categories, activity.category)}</TableCell>
                                         <TableCell>{activity.region || '-'}</TableCell>
                                         <TableCell>{priceOf(activity)}</TableCell>
                                         <TableCell>

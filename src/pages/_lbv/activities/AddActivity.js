@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Box, Button, Card, Chip, CircularProgress, Grid } from "@mui/material";
+import { Alert, Box, Button, Card, Chip, CircularProgress, Grid, Link } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ReactQuill from "react-quill";
@@ -8,7 +8,8 @@ import { LBVInput, LBVSelect } from "components/_lbvcomponents/LBVInput";
 import { LBVLabel, LBVTitleLabel } from "components/_lbvcomponents/LBVLabel";
 import ImageUploader from "components/_lbvcomponents/ImageUploader";
 import { createActivity, getActivity, updateActivity } from "services/activityService";
-import { CATEGORY_OPTIONS } from "./Activities";
+import useCategories from "helper/useCategories";
+import useRegions from "helper/useRegions";
 import ListEditor from "./ListEditor";
 import ActivityPrices from "./ActivityPrices";
 // The blocked-date calendar is not activity-specific - it takes a date list and
@@ -32,7 +33,9 @@ const EMPTY = {
     description: '',
     category: null,
     region: '',
-    location: 'Bali',
+    regionId: null,
+    location: '',
+    locationId: null,
     meetingPoint: '',
     mapInfo: '',
     durationMinutes: '',
@@ -66,6 +69,16 @@ function AddActivity() {
     const { id } = useParams()
 
     const [form, setForm] = useState(EMPTY)
+    // Inactive categories are still listed so an activity already filed under one
+    // opens showing where it sits, rather than an empty picker.
+    const { categories } = useCategories({ activeOnly: false })
+    // Locations depend on the chosen region, so the loader is handed the region name
+    // and resolves the rest itself.
+    const { regionOptions, locationOptions } = useRegions(form.region)
+    const categoryOptions = categories.map((category) => ({
+        label: category.isActive === false ? `${category.name} (inactive)` : category.name,
+        value: category.slug
+    }))
     const [status, setStatus] = useState('draft')
     const [loading, setLoading] = useState(Boolean(id))
     const [saving, setSaving] = useState(false)
@@ -85,7 +98,9 @@ function AddActivity() {
         setForm({
             ...EMPTY,
             ...data,
-            category: CATEGORY_OPTIONS.find((option) => option.value === data.category) || null,
+            // kept as the stored slug - the picker resolves it to an option at
+            // render time, so the form does not race the category list loading
+            category: data.category || null,
             basis: BASIS_OPTIONS.find((option) => option.value === (data.pricing || {}).basis) || BASIS_OPTIONS[0],
             adult: (data.pricing || {}).adult || '',
             child: (data.pricing || {}).child || '',
@@ -123,9 +138,11 @@ function AddActivity() {
         name: form.name,
         summary: form.summary,
         description: form.description,
-        category: form.category ? form.category.value : undefined,
+        category: form.category || undefined,
         region: form.region,
+        regionId: form.regionId || undefined,
         location: form.location,
+        locationId: form.locationId || undefined,
         meetingPoint: form.meetingPoint,
         mapInfo: form.mapInfo,
         durationMinutes: numberOrUndefined(form.durationMinutes),
@@ -216,15 +233,54 @@ function AddActivity() {
 
                             <Grid item xs={12} md={6}>
                                 <LBVSelect label="Category"
-                                    options={CATEGORY_OPTIONS}
-                                    value={form.category}
-                                    onChange={(e) => onChange({ category: e })} />
+                                    options={categoryOptions}
+                                    value={categoryOptions.find((option) => option.value === form.category) || null}
+                                    showInfo={categoryOptions.length ? null : (
+                                        <>
+                                            {'No categories yet - '}
+                                            {/* A new tab, so a half-filled activity is not lost on the way
+                                                out. The list refreshes when this tab is focused again. */}
+                                            <Link
+                                                href="/setting/categories"
+                                                target="_blank"
+                                                rel="noopener"
+                                                sx={{ color: 'inherit', fontWeight: 600, textDecoration: 'underline' }}
+                                            >
+                                                add them in Settings &gt; Categories
+                                            </Link>
+                                        </>
+                                    )}
+                                    onChange={(e) => onChange({ category: e ? e.value : null })} />
                             </Grid>
 
                             <Grid item xs={12} md={6}>
-                                <LBVInput label="Region" placeHolder="Ubud, Kintamani, Nusa Penida…"
-                                    value={form.region}
-                                    onChange={(e) => onChange({ region: e.currentTarget.value })} />
+                                <LBVSelect label="Region"
+                                    options={regionOptions}
+                                    value={regionOptions.find((option) => option.value === form.region) || null}
+                                    placeHolder="Bali"
+                                    onChange={(e) => onChange({
+                                        region: e ? e.value : '',
+                                        regionId: e ? e.data._id : null,
+                                        // The areas belong to a region, so changing it
+                                        // invalidates whatever was chosen before.
+                                        location: '',
+                                        locationId: null
+                                    })} />
+                            </Grid>
+
+                            <Grid item xs={12} md={6}>
+                                <LBVSelect label="Location"
+                                    options={locationOptions}
+                                    value={locationOptions.find((option) => option.value === form.location) || null}
+                                    disabled={!form.region}
+                                    placeHolder={form.region ? "Ubud, Canggu, Nusa Dua…" : "Choose a region first"}
+                                    showInfo={form.region && !locationOptions.length
+                                        ? "No locations in this region yet - add them in Settings > Location"
+                                        : null}
+                                    onChange={(e) => onChange({
+                                        location: e ? e.value : '',
+                                        locationId: e ? e.data._id : null
+                                    })} />
                             </Grid>
 
                             <Grid item xs={12} md={6}>

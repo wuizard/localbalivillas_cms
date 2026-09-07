@@ -99,7 +99,7 @@ function AddEventPackage() {
 
         if (error) { toast.error(error); return }
         if (data) {
-            toast.success(nextStatus === 'published' ? 'Occasion published' : 'Draft saved')
+            toast.success(nextStatus === 'published' ? 'Event published' : 'Draft saved')
             navigate('/events')
         }
     }
@@ -115,7 +115,7 @@ function AddEventPackage() {
                     <Grid item xs={12} p={2}>
                         <Grid container alignItems="center" spacing={1}>
                             <Grid item>
-                                <LBVTitleLabel>{id ? 'Edit occasion' : 'New occasion'}</LBVTitleLabel>
+                                <LBVTitleLabel>{id ? 'Edit event' : 'New event'}</LBVTitleLabel>
                             </Grid>
                             <Grid item>
                                 <Chip size="small"
@@ -164,7 +164,7 @@ function AddEventPackage() {
                         <ImageUploader
                             uploadName="packageImage"
                             dirName="events"
-                            title="Occasion images"
+                            title="Event images"
                             value={form.packageImage || []}
                             onChange={(images) => onChange({ packageImage: images })}
                             onPendingChange={setUploadingCount}

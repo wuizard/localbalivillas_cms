@@ -36,7 +36,7 @@ export const statusMeta = (value) =>
 
 export const SOURCE_LABEL = {
     events_page: 'Events page',
-    event_package: 'Occasion page',
+    event_package: 'Event detail page',
     villa_page: 'Villa page',
     confirmation: 'Booking confirmation',
     nav: 'Navigation',

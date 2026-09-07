@@ -121,7 +121,7 @@ function EnquiryDetail() {
                 <Card sx={{ p: 3 }}>
                     <LBVTitleLabel>What they asked for</LBVTitleLabel>
                     <Divider sx={{ my: 1.5 }} />
-                    <Row label="Occasion">{(enquiry.subject || {}).name}</Row>
+                    <Row label="Event">{(enquiry.subject || {}).name}</Row>
                     <Row label="Date">
                         {enquiry.eventDate
                             ? moment(enquiry.eventDate).format('dddd, D MMMM YYYY') + (enquiry.dateFlexible ? ' (flexible)' : '')

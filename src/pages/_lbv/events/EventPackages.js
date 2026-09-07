@@ -45,7 +45,7 @@ function EventPackages() {
         setDeleteDialog({ open: false, pkg: null })
         const { data, error } = await deleteEventPackage({ _id })
         if (error) { toast.error(error) }
-        if (data) { toast.success('Occasion deleted'); load() }
+        if (data) { toast.success('Event deleted'); load() }
     }
 
     const rangeOf = (pkg) => {
@@ -65,15 +65,15 @@ function EventPackages() {
                     spacing={2}
                 >
                     <Stack spacing={0.5}>
-                        <Typography variant="h4">Occasions</Typography>
+                        <Typography variant="h4">Events</Typography>
                         <Typography variant="body2" color="textSecondary">
                             The event types listed on the website. Ranges are indicative &mdash;
                             the quote comes out of the conversation.
                         </Typography>
                     </Stack>
                     <Button variant="contained" startIcon={<PlusOutlined />}
-                        onClick={() => navigate('/events/add-occasion')}>
-                        Add Occasion
+                        onClick={() => navigate("/events/add-event")}>
+                        Add Event
                     </Button>
                 </Stack>
             </Grid>
@@ -102,7 +102,7 @@ function EventPackages() {
                                     <TableRow>
                                         <TableCell colSpan={5}>
                                             <Typography variant="body2" color="textSecondary" sx={{ py: 2 }}>
-                                                No occasions yet.
+                                                No events yet.
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
@@ -148,7 +148,7 @@ function EventPackages() {
 
             <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, pkg: null })}>
                 <Box sx={{ p: 3, maxWidth: 420 }}>
-                    <Typography variant="h5">Delete this occasion?</Typography>
+                    <Typography variant="h5">Delete this event?</Typography>
                     <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                         &ldquo;{deleteDialog.pkg && deleteDialog.pkg.name}&rdquo; will be removed from
                         the website. Enquiries that referenced it stay readable.

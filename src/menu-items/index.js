@@ -1,13 +1,28 @@
 // project import
-import pages from './pages';
 import dashboard from './dashboard';
-import { isSuperAdmin } from 'helper/role';
-
+import catalogue from './catalogue';
+import marketing from './marketing';
+import orders from './orders';
 import setting from './settings';
+import { isSuperAdmin } from 'helper/role';
 
 // ==============================|| MENU ITEMS ||============================== //
 
-let items = [dashboard, pages]
+// Dashboard stands alone above the labelled sections - a heading over a single
+// item reads as noise.
+let items = [dashboard]
+
+// Catalogue and Marketing are superadmin-only, so for other roles those groups
+// have no children and are left out entirely rather than showing an empty heading.
+if (catalogue.children.length) {
+  items.push(catalogue)
+}
+
+if (marketing.children.length) {
+  items.push(marketing)
+}
+
+items.push(orders)
 
 if (isSuperAdmin()) {
   items.push(setting)

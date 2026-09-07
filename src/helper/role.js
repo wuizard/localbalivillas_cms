@@ -2,8 +2,8 @@ import { reactLocalStorage } from 'reactjs-localstorage';
 
 /**
  * The superadmin check, in one place. It was duplicated in menu-items/index.js,
- * menu-items/pages.js and routes/LBVRoutes.js; Activities and Occasions would have
- * made it five copies.
+ * the menu group files and routes/LBVRoutes.js; Activities and Events would
+ * have made it five copies.
  *
  * Known limitation, unchanged by this extraction: the value is read once at module
  * load, so a role change only takes effect after a reload.
