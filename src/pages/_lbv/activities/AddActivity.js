@@ -1,5 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Box, Button, Card, Chip, CircularProgress, Grid, Link } from "@mui/material";
+import {
+    Alert,
+    Box,
+    Button,
+    Card,
+    Chip,
+    CircularProgress,
+    FormControlLabel,
+    Grid,
+    Link,
+    Radio,
+    RadioGroup,
+    Stack,
+    Typography
+} from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ReactQuill from "react-quill";
@@ -56,6 +70,9 @@ const EMPTY = {
     highlights: [],
     inclusions: [],
     exclusions: [],
+    // On unless someone turns it off, so a new activity behaves the way every
+    // activity written before this switch existed does.
+    showInclusions: true,
     whatToBring: [],
 };
 
@@ -115,6 +132,8 @@ function AddActivity() {
             highlights: data.highlights || [],
             inclusions: data.inclusions || [],
             exclusions: data.exclusions || [],
+            // Absent on anything saved before the switch shipped, which means on.
+            showInclusions: data.showInclusions !== false,
             whatToBring: data.whatToBring || [],
             durationMinutes: data.durationMinutes || '',
             capacityPerDay: data.capacityPerDay || '',
@@ -167,6 +186,7 @@ function AddActivity() {
         highlights: form.highlights,
         inclusions: form.inclusions,
         exclusions: form.exclusions,
+        showInclusions: form.showInclusions !== false,
         whatToBring: form.whatToBring,
         status: nextStatus,
     })
@@ -404,19 +424,54 @@ function AddActivity() {
                             onChange={(value) => onChange({ whatToBring: value })} />
                     </Grid>
 
-                    <Grid item xs={12} md={6} p={2}>
-                        <ListEditor title="Included"
-                            placeholder="Hotel pick-up and drop-off"
-                            value={form.inclusions}
-                            onChange={(value) => onChange({ inclusions: value })} />
-                    </Grid>
+                    <Grid item xs={12} p={2}>
+                        <LBVTitleLabel>What&rsquo;s included</LBVTitleLabel>
+                        {/* The lists are kept when the section is switched off rather
+                            than cleared: switching it back on is a common enough
+                            change of mind that retyping them would be the bug. */}
+                        <RadioGroup
+                            row
+                            value={form.showInclusions === false ? 'hide' : 'show'}
+                            onChange={(e) => onChange({ showInclusions: e.target.value === 'show' })}
+                            sx={{ mt: 0.5 }}
+                        >
+                            <FormControlLabel value="show" control={<Radio size="small" />}
+                                label="Show on the website" />
+                            <FormControlLabel value="hide" control={<Radio size="small" />}
+                                label="Hide" />
+                        </RadioGroup>
 
-                    <Grid item xs={12} md={6} p={2}>
-                        <ListEditor title="Not included"
-                            hint="The column that prevents most arguments on the day."
-                            placeholder="Tips"
-                            value={form.exclusions}
-                            onChange={(value) => onChange({ exclusions: value })} />
+                        {form.showInclusions === false ? (
+                            <Alert severity="info" sx={{ mt: 1 }}>
+                                The &ldquo;What&rsquo;s included&rdquo; section will not appear on the
+                                activity page. Anything already written is kept and comes back when
+                                this is switched on.
+                            </Alert>
+                        ) : (
+                            <Box sx={{ mt: 1.5 }}>
+                                <Stack spacing={0.5} sx={{ mb: 1.5 }}>
+                                    <Typography variant="caption" color="textSecondary">
+                                        Each column is left out of the page on its own when it is
+                                        empty, and the whole section disappears when both are.
+                                    </Typography>
+                                </Stack>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} md={6}>
+                                        <ListEditor title="Included"
+                                            placeholder="Hotel pick-up and drop-off"
+                                            value={form.inclusions}
+                                            onChange={(value) => onChange({ inclusions: value })} />
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <ListEditor title="Not included"
+                                            hint="The column that prevents most arguments on the day."
+                                            placeholder="Tips"
+                                            value={form.exclusions}
+                                            onChange={(value) => onChange({ exclusions: value })} />
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        )}
                     </Grid>
 
                     <Grid item xs={12} p={2}>
