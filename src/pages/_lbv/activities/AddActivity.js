@@ -17,6 +17,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ReactQuill from "react-quill";
+import { NumericFormat } from "react-number-format";
 
 import { LBVInput, LBVSelect } from "components/_lbvcomponents/LBVInput";
 import { LBVLabel, LBVTitleLabel } from "components/_lbvcomponents/LBVLabel";
@@ -353,15 +354,32 @@ function AddActivity() {
                                     value={form.basis}
                                     onChange={(e) => onChange({ basis: e })} />
                             </Grid>
+                            {/* Grouped like the override rules in ActivityPrices: 1.000.000
+                                rather than 1000000, because a rate typed with one zero too
+                                many is unreadable in a bare number field. `onValueChange`
+                                hands back the unformatted digits, so the payload is
+                                unchanged - only the display is. decimalScale and
+                                allowNegative replace the guards LBVInput's own onKeyDown
+                                gave the number input, which NumericFormat now owns. */}
                             <Grid item xs={6} sm={6} md={3}>
-                                <LBVInput label="Adult (IDR)" type="number"
+                                <NumericFormat label="Adult (IDR)"
                                     value={form.adult}
-                                    onChange={(e) => onChange({ adult: e.currentTarget.value })} />
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    decimalScale={0}
+                                    allowNegative={false}
+                                    customInput={LBVInput}
+                                    onValueChange={({ value }) => onChange({ adult: value })} />
                             </Grid>
                             <Grid item xs={6} sm={6} md={3}>
-                                <LBVInput label="Child (IDR)" type="number"
+                                <NumericFormat label="Child (IDR)"
                                     value={form.child}
-                                    onChange={(e) => onChange({ child: e.currentTarget.value })} />
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    decimalScale={0}
+                                    allowNegative={false}
+                                    customInput={LBVInput}
+                                    onValueChange={({ value }) => onChange({ child: value })} />
                             </Grid>
                             {/* Full width on a phone so it ends the rate group rather than
                                 pairing with Min people and splitting rates from capacity. */}
