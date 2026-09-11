@@ -73,9 +73,14 @@ function LBVInput ({
                 }
               />
               :
-              <TextField placeholder={placeHolder} fullWidth={fullWidth} multiline={type == "textarea"} 
+              <TextField placeholder={placeHolder} fullWidth={fullWidth} multiline={type == "textarea"}
                 type={type} rows={rows} maxRows={maxRows} onInput={onInput}
-                disabled={disabled} value={value} defaultValue={defaultValue} 
+                disabled={disabled} value={value} defaultValue={defaultValue}
+                onWheel={(e) => {
+                  if (type === 'number' && e.target && typeof e.target.blur === 'function') {
+                    e.target.blur()
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (type === 'number' && e.code === 'Minus') {
                       e.preventDefault();
