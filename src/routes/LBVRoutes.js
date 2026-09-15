@@ -35,6 +35,8 @@ const ActivityOrderDetail = Loadable(lazy(() => import('pages/_lbv/activities/Ac
 const EventPackages = Loadable(lazy(() => import('pages/_lbv/events/EventPackages')));
 const AddEventPackage = Loadable(lazy(() => import('pages/_lbv/events/AddEventPackage')));
 
+const Reviews = Loadable(lazy(() => import('pages/_lbv/reviews/Reviews')));
+
 const Enquiries = Loadable(lazy(() => import('pages/_lbv/enquiries/Enquiries')));
 const EnquiryDetail = Loadable(lazy(() => import('pages/_lbv/enquiries/EnquiryDetail')));
 
@@ -202,6 +204,10 @@ let LBVRoutes = {
           element: <EnquiryDetail />
         },
       ]
+    },
+    {
+      path: 'reviews',
+      element: <Reviews />
     },
     {
       path: 'coupons',

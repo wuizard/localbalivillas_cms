@@ -1,11 +1,12 @@
 // assets
-import { CalendarOutlined, ScheduleOutlined, MailOutlined } from '@ant-design/icons';
+import { CalendarOutlined, ScheduleOutlined, MailOutlined, StarOutlined } from '@ant-design/icons';
 
 // icons
 const icons = {
   CalendarOutlined,
   ScheduleOutlined,
-  MailOutlined
+  MailOutlined,
+  StarOutlined
 };
 
 // ==============================|| MENU ITEMS - ORDERS ||============================== //
@@ -42,6 +43,14 @@ const orders = {
       type: 'item',
       url: '/enquiries',
       icon: icons.MailOutlined,
+      breadcrumbs: true
+    },
+    {
+      id: 'reviews',
+      title: 'Reviews',
+      type: 'item',
+      url: '/reviews',
+      icon: icons.StarOutlined,
       breadcrumbs: true
     }
   ]
