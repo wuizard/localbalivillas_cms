@@ -6,6 +6,7 @@ import {
     Dialog,
     Grid,
     InputAdornment,
+    Link,
     MenuItem,
     Rating,
     Skeleton,
@@ -17,15 +18,19 @@ import {
     TablePagination,
     TableRow,
     TextField,
+    Tooltip,
     Typography
 } from "@mui/material";
 import { SearchOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDebounce } from "use-debounce";
 import moment from "moment";
 
 import MainCard from "components/MainCard";
+import { statusChipSx, statusMeta } from "helper/bookingStatus";
 import { getReviews } from "services/reviewService";
+import CreateReviewLinkDialog from "./CreateReviewLinkDialog";
 
 // The API pages reviews 20 at a time, same as every other list here.
 const PAGE_SIZE = 20
@@ -34,20 +39,35 @@ const RATING_OPTIONS = [5, 4, 3, 2, 1]
 
 const emptyFilter = () => ({ search: '', rating: '', page: 0 })
 
-// A guest may have signed up with a full name, a first/last pair, or neither.
-const guestName = (user) => {
-    if (!user) { return 'Unknown guest' }
+// A guest may have signed up with a full name, a first/last pair, or neither. A stay
+// booked without an account has no user at all, and then the name the booking was made
+// under - copied onto the review when the link was issued - is all there is.
+const guestName = (user, fallback) => {
+    if (!user) { return (fallback || '').trim() || 'Unknown guest' }
     const parts = [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
-    return user.name || parts || user.email || 'Unknown guest'
+    return user.name || parts || user.email || (fallback || '').trim() || 'Unknown guest'
+}
+
+// The stay behind a review, matched on property + guest by the API. A guest who
+// booked twice gets the booking they had before writing it.
+const stayDates = (booking) => {
+    const dates = (booking && booking.dates) || []
+    if (!dates.length) { return '' }
+    const first = moment(dates[0]).format('DD MMM YYYY')
+    if (dates.length === 1) { return first }
+    return `${first} – ${moment(dates[dates.length - 1]).format('DD MMM YYYY')}`
 }
 
 function Reviews() {
+    const navigate = useNavigate()
+
     const [rows, setRows] = useState([])
     const [totalData, setTotalData] = useState(0)
     const [averageRating, setAverageRating] = useState(null)
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState(emptyFilter())
     const [reading, setReading] = useState(null)
+    const [linkDialog, setLinkDialog] = useState(false)
 
     // Same 500ms the other lists use - one request per pause, not per keystroke.
     const [debouncedFilter] = useDebounce(filter, 500)
@@ -82,12 +102,22 @@ function Reviews() {
     return (
         <Grid container spacing={2.75}>
             <Grid item xs={12}>
-                <Stack spacing={0.5}>
-                    <Typography variant="h4">Reviews</Typography>
-                    <Typography variant="body2" color="textSecondary">
-                        Newest first. Every review here was left by a guest with a matching stay &mdash;
-                        the website&apos;s placeholder cards are not stored and never appear in this list.
-                    </Typography>
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'flex-end' }}
+                    spacing={1.5}
+                >
+                    <Stack spacing={0.5}>
+                        <Typography variant="h4">Reviews</Typography>
+                        <Typography variant="body2" color="textSecondary">
+                            Newest first. Every review here was left by a guest with a matching stay &mdash;
+                            the website&apos;s placeholder cards are not stored and never appear in this list.
+                        </Typography>
+                    </Stack>
+                    <Button variant="contained" onClick={() => setLinkDialog(true)}>
+                        Create review link
+                    </Button>
                 </Stack>
             </Grid>
 
@@ -155,6 +185,7 @@ function Reviews() {
                                 <TableRow>
                                     <TableCell>Guest</TableCell>
                                     <TableCell>Property</TableCell>
+                                    <TableCell>Booking</TableCell>
                                     <TableCell>Rating</TableCell>
                                     <TableCell>Review</TableCell>
                                     <TableCell>Date</TableCell>
@@ -163,13 +194,13 @@ function Reviews() {
                             <TableBody>
                                 {loading && [0, 1, 2].map((row) => (
                                     <TableRow key={row}>
-                                        <TableCell colSpan={5}><Skeleton height={32} /></TableCell>
+                                        <TableCell colSpan={6}><Skeleton height={32} /></TableCell>
                                     </TableRow>
                                 ))}
 
                                 {!loading && rows.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={5}>
+                                        <TableCell colSpan={6}>
                                             <Typography variant="body2" color="textSecondary" align="center" sx={{ py: 5 }}>
                                                 {hasFilter
                                                     ? 'No reviews match these filters.'
@@ -184,11 +215,21 @@ function Reviews() {
                                     const property = review.property || null
                                     const country = user && user.country ? user.country.name : ''
                                     const images = review.images || []
+                                    const booking = review.booking || null
 
                                     return (
                                         <TableRow key={review._id} hover>
                                             <TableCell>
-                                                <Typography variant="body2">{guestName(user)}</Typography>
+                                                <Stack direction="row" spacing={0.75} alignItems="center">
+                                                    <Typography variant="body2">
+                                                        {guestName(user, review.guestName)}
+                                                    </Typography>
+                                                    {review.source === 'invite' && (
+                                                        <Tooltip title="Left through a review link issued from the booking">
+                                                            <Chip size="small" variant="outlined" label="Invited" />
+                                                        </Tooltip>
+                                                    )}
+                                                </Stack>
                                                 <Typography variant="caption" color="textSecondary">
                                                     {[user && user.email, country].filter(Boolean).join(' · ')}
                                                 </Typography>
@@ -202,6 +243,41 @@ function Reviews() {
                                                         {property ? (property.region || '') : ''}
                                                     </Typography>
                                                 </Stack>
+                                            </TableCell>
+                                            <TableCell>
+                                                {booking ? (
+                                                    <Stack spacing={0.25} alignItems="flex-start">
+                                                        <Stack direction="row" spacing={0.75} alignItems="center">
+                                                            <Link
+                                                                component="button"
+                                                                variant="subtitle2"
+                                                                underline="always"
+                                                                onClick={() => navigate(`/order/${booking._id}`)}
+                                                            >
+                                                                {booking.bookingId || 'Open booking'}
+                                                            </Link>
+                                                            <Chip
+                                                                size="small"
+                                                                label={statusMeta(booking.lastStatus).label}
+                                                                sx={statusChipSx(booking.lastStatus)}
+                                                            />
+                                                        </Stack>
+                                                        <Typography variant="caption" color="textSecondary">
+                                                            {stayDates(booking)}
+                                                        </Typography>
+                                                        {booking.otherBookings > 0 && (
+                                                            <Tooltip title="This guest has more than one booking for this property. The link goes to the last stay before the review.">
+                                                                <Typography variant="caption" color="textSecondary">
+                                                                    +{booking.otherBookings} other stay{booking.otherBookings === 1 ? '' : 's'}
+                                                                </Typography>
+                                                            </Tooltip>
+                                                        )}
+                                                    </Stack>
+                                                ) : (
+                                                    <Tooltip title="No booking found for this guest and property — it may have been made under a different email.">
+                                                        <Typography variant="body2" color="textSecondary">—</Typography>
+                                                    </Tooltip>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Stack direction="row" spacing={0.75} alignItems="center">
@@ -264,11 +340,15 @@ function Reviews() {
                 </MainCard>
             </Grid>
 
+            <CreateReviewLinkDialog open={linkDialog} onClose={() => { setLinkDialog(false); loadData() }} />
+
             <Dialog open={!!reading} onClose={() => setReading(null)} maxWidth="sm" fullWidth>
                 <Grid container p={2.5} spacing={2}>
                     <Grid item xs={12}>
                         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-                            <Typography variant="h5">{guestName(reading && reading.user)}</Typography>
+                            <Typography variant="h5">
+                                {guestName(reading && reading.user, reading && reading.guestName)}
+                            </Typography>
                             <Rating value={(reading && reading.rating) || 0} precision={0.5} size="small" readOnly />
                         </Stack>
                         <Typography variant="caption" color="textSecondary">
@@ -296,10 +376,19 @@ function Reviews() {
                             </Stack>
                         </Grid>
                     )}
-                    <Grid item xs={12} container justifyContent="flex-end">
-                        <Button variant="outlined" color="secondary" onClick={() => setReading(null)}>
-                            Close
-                        </Button>
+                    <Grid item xs={12} container justifyContent="flex-end" spacing={1}>
+                        {reading && reading.booking && (
+                            <Grid item>
+                                <Button variant="outlined" onClick={() => navigate(`/order/${reading.booking._id}`)}>
+                                    Open booking {reading.booking.bookingId || ''}
+                                </Button>
+                            </Grid>
+                        )}
+                        <Grid item>
+                            <Button variant="outlined" color="secondary" onClick={() => setReading(null)}>
+                                Close
+                            </Button>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Dialog>

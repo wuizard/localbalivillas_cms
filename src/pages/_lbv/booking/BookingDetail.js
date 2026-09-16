@@ -16,6 +16,7 @@ import moment from "moment";
 import { LBVLabel, LBVTitleLabel } from "components/_lbvcomponents/LBVLabel";
 import { currencyFormat } from "helper/numberHelper";
 import { getBooking } from "services/bookingService";
+import ReviewLinkPanel from "pages/_lbv/reviews/ReviewLinkPanel";
 
 // Matches the vocabulary the Orders list already uses, plus the states a booking can
 // reach after it. Kept here rather than imported so this screen renders every status
@@ -250,6 +251,15 @@ function BookingDetail() {
                         </Button>
                     </Card>
                 )}
+
+                <Card sx={{ p: 3, mt: 2 }}>
+                    <LBVTitleLabel>Guest review</LBVTitleLabel>
+                    <LBVLabel style={{ fontSize: 12, color: '#858585' }}>
+                        Ask this guest to review the stay.
+                    </LBVLabel>
+                    <Divider sx={{ my: 1.5 }} />
+                    <ReviewLinkPanel bookingId={bookingData._id} />
+                </Card>
 
                 <Card sx={{ p: 3, mt: 2 }}>
                     <LBVTitleLabel>Timeline</LBVTitleLabel>
