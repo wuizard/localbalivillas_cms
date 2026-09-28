@@ -139,6 +139,15 @@ function ImageUploader({
     useEffect(() => { valueRef.current = value; }, [value]);
     useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
+    // Every change goes through here so the ref moves forward *now*. The effect
+    // above only catches up after the parent re-renders, and two uploads that
+    // finish before that render would both read the same old list - the second
+    // write then silently drops the first image.
+    const commit = useCallback((next) => {
+        valueRef.current = next;
+        onChangeRef.current(next);
+    }, []);
+
     const pending = uploads.filter((item) => item.status === 'uploading').length;
     useEffect(() => {
         if (onPendingChange) { onPendingChange(pending); }
@@ -174,12 +183,12 @@ function ImageUploader({
             });
             // Append to whatever the list holds *now*, not at drop time - four of
             // these land concurrently and out of order.
-            onChangeRef.current(addUnique(valueRef.current, [url]));
+            commit(addUnique(valueRef.current, [url]));
             dropUpload(entry.id);
         } catch (error) {
             patchUpload(entry.id, { status: 'error', error: readableUploadError(error) });
         }
-    }, [dirName, patchUpload, dropUpload]);
+    }, [dirName, patchUpload, dropUpload, commit]);
 
     const handleDrop = useCallback(async (files) => {
         if (disabled || !files) { return; }
@@ -188,7 +197,7 @@ function ImageUploader({
         // Re-dropping an already-uploaded URL should not go near S3 again.
         const existingUrls = incoming.filter((file) => typeof file === 'string' && file.indexOf('http') === 0);
         if (existingUrls.length > 0) {
-            onChangeRef.current(addUnique(valueRef.current, existingUrls));
+            commit(addUnique(valueRef.current, existingUrls));
         }
 
         const newFiles = incoming.filter(isImageFile);
@@ -224,11 +233,11 @@ function ImageUploader({
             UPLOAD_CONCURRENCY,
             startUpload,
         );
-    }, [disabled, startUpload]);
+    }, [disabled, startUpload, commit]);
 
     const removeImage = useCallback((index) => {
-        onChangeRef.current(valueRef.current.filter((_, i) => i !== index));
-    }, []);
+        commit(valueRef.current.filter((_, i) => i !== index));
+    }, [commit]);
 
     const handleDragStart = useCallback(({ active }) => {
         setActiveId(active.id);
@@ -256,8 +265,8 @@ function ImageUploader({
         const newIndex = list.indexOf(over.id);
         if (oldIndex < 0 || newIndex < 0) { return; }
 
-        onChangeRef.current(arrayMoveImmutable(list, oldIndex, newIndex));
-    }, []);
+        commit(arrayMoveImmutable(list, oldIndex, newIndex));
+    }, [commit]);
 
     const addUrl = useCallback(() => {
         const url = urlDraft.trim();
@@ -266,10 +275,10 @@ function ImageUploader({
             setUrlError('Needs to be a full https:// URL.');
             return;
         }
-        onChangeRef.current(addUnique(valueRef.current, [url]));
+        commit(addUnique(valueRef.current, [url]));
         setUrlDraft('');
         setUrlError(null);
-    }, [urlDraft]);
+    }, [urlDraft, commit]);
 
     return (
         <Grid container spacing={1}>
