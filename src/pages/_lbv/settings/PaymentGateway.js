@@ -107,7 +107,7 @@ function PaymentGateway () {
                                                     <Chip size="small" color="success" label="Active" />
                                                 )}
                                                 {!provider.configured && (
-                                                    <Chip size="small" variant="outlined" label="Keys not set" />
+                                                    <Chip size="small" variant="outlined" label="Not set up" />
                                                 )}
                                             </Stack>
                                             {meta.description && (
@@ -145,9 +145,9 @@ function PaymentGateway () {
             <Grid item xs={12} md={4}>
                 <Alert severity="info">
                     <Stack spacing={1}>
-                        <span>The switch applies to the next booking. No deploy or restart needed.</span>
-                        <span>Payment links already sent keep working with the provider that issued them.</span>
-                        <span>A provider marked &ldquo;Keys not set&rdquo; needs its API keys added on the server before it can be chosen.</span>
+                        <span>Changes apply from the next booking onwards.</span>
+                        <span>Guests who already have a payment link can still pay with it.</span>
+                        <span>A provider marked &ldquo;Not set up&rdquo; can&rsquo;t be chosen yet. Contact the tech team to enable it.</span>
                     </Stack>
                 </Alert>
             </Grid>
