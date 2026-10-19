@@ -1,12 +1,13 @@
 // assets
-import { UsergroupDeleteOutlined, EnvironmentOutlined, PushpinOutlined, TagsOutlined } from '@ant-design/icons';
+import { UsergroupDeleteOutlined, EnvironmentOutlined, PushpinOutlined, TagsOutlined, CreditCardOutlined } from '@ant-design/icons';
 
 // icons
 const icons = {
   UsergroupDeleteOutlined,
   EnvironmentOutlined,
   PushpinOutlined,
-  TagsOutlined
+  TagsOutlined,
+  CreditCardOutlined
 };
 
 // ==============================|| MENU ITEMS - SAMPLE PAGE & DOCUMENTATION ||============================== //
@@ -46,6 +47,14 @@ const setting = {
         type: 'item',
         url: 'setting/categories',
         icon: icons.TagsOutlined,
+        breadcrumbs: true
+      },
+      {
+        id: 'payment-gateway',
+        title: 'Payment Gateway',
+        type: 'item',
+        url: 'setting/payment-gateway',
+        icon: icons.CreditCardOutlined,
         breadcrumbs: true
       },
     ]
