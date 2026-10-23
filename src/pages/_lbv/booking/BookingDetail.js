@@ -17,6 +17,8 @@ import { LBVLabel, LBVTitleLabel } from "components/_lbvcomponents/LBVLabel";
 import { currencyFormat } from "helper/numberHelper";
 import { getBooking } from "services/bookingService";
 import ReviewLinkPanel from "pages/_lbv/reviews/ReviewLinkPanel";
+import PaymentInfoCard from "pages/_lbv/settings/PaymentInfoCard";
+import { providerLabel, providerOf } from "helper/paymentProvider";
 
 // Matches the vocabulary the Orders list already uses, plus the states a booking can
 // reach after it. Kept here rather than imported so this screen renders every status
@@ -211,7 +213,7 @@ function BookingDetail() {
                     </Grid>
 
                     <Alert severity="info" sx={{ mt: 1.5 }}>
-                        Villa bookings are non-refundable. A refund is a manual operation in Xendit.
+                        {`Villa bookings are non-refundable. A refund is a manual operation in ${providerLabel(providerOf(bookingData))}.`}
                     </Alert>
                 </Card>
             </Grid>
@@ -241,16 +243,7 @@ function BookingDetail() {
                     </Stack>
                 </Card>
 
-                {bookingData.paymentLink && (
-                    <Card sx={{ p: 3, mt: 2 }}>
-                        <LBVTitleLabel>Payment</LBVTitleLabel>
-                        <Divider sx={{ my: 1.5 }} />
-                        <Button variant="outlined" fullWidth
-                            href={bookingData.paymentLink} target="_blank" rel="noopener noreferrer">
-                            Open payment link
-                        </Button>
-                    </Card>
-                )}
+                <PaymentInfoCard order={bookingData} sx={{ mt: 2 }} />
 
                 <Card sx={{ p: 3, mt: 2 }}>
                     <LBVTitleLabel>Guest review</LBVTitleLabel>

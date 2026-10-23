@@ -22,6 +22,7 @@ const BookingDetail = Loadable(lazy(() => import('pages/_lbv/booking/BookingDeta
 const Region = Loadable(lazy(() => import('pages/_lbv/region/Regions')));
 const Location = Loadable(lazy(() => import('pages/_lbv/region/Locations')));
 const Categories = Loadable(lazy(() => import('pages/_lbv/category/Categories')));
+const PaymentGateway = Loadable(lazy(() => import('pages/_lbv/settings/PaymentGateway')));
 
 const Coupons = Loadable(lazy(() => import('pages/_lbv/coupon/Coupons')))
 const CouponDetail = Loadable(lazy(() => import('pages/_lbv/coupon/CouponDetail')))
@@ -123,6 +124,10 @@ let SuperAdminSettings = {
     {
       path: 'categories',
       element: <Categories />
+    },
+    {
+      path: 'payment-gateway',
+      element: <PaymentGateway />
     },
     {
       path: 'admins',

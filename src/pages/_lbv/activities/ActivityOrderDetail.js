@@ -20,6 +20,7 @@ import { LBVLabel, LBVTitleLabel } from "components/_lbvcomponents/LBVLabel";
 import { currencyFormat } from "helper/numberHelper";
 import { getActivityOrder, updateActivityOrderStatus } from "services/activityOrderService";
 import { ORDER_STATUS, statusChipSx, statusMeta } from "./activityOrderStatus";
+import PaymentInfoCard from "pages/_lbv/settings/PaymentInfoCard";
 
 function Row({ label, children }) {
     if (children === null || children === undefined || children === '') { return null }
@@ -199,6 +200,8 @@ function ActivityOrderDetail() {
                         )}
                     </Stack>
                 </Card>
+
+                <PaymentInfoCard order={order} sx={{ mt: 2 }} />
 
                 <Card sx={{ p: 3, mt: 2 }}>
                     <LBVTitleLabel>Status</LBVTitleLabel>
